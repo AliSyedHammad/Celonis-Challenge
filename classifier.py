@@ -35,47 +35,6 @@ class Classifier(ABC):
         data_dict = read_and_process_files(directory_path)
         return data_dict
 
-    # def pad_sample(self, sample, max_length):
-    #     """Pad the sample with zero-values up to the max_length."""
-    #     padding_length = max_length - len(sample)
-    #     padded_sample = np.pad(sample, ((0, padding_length), (0, 0)), 'constant', constant_values=0)
-    #     return padded_sample
-
-    # def extract_features_using_sklearn_support(self):
-    #     import pandas as pd
-    #     from sklearn.model_selection import train_test_split
-    #     from sktime.datatypes._panel._convert import from_nested_to_2d_array
-
-    #     gesture_data = self.__load_data()
-
-    #     # Calculate the maximum length of samples
-    #     max_length = max(max(len(sample) for sample in samples) for samples in gesture_data.values())
-        
-    #     nested_data = []
-    #     labels = []
-        
-    #     # Convert each sample in the dictionary to a pandas Series
-    #     for gesture_label, samples in gesture_data.items():
-    #         for sample in samples:
-    #             # Ensure the sample is a numpy array and pad if necessary
-    #             padded_sample = self.pad_sample(np.array(sample), max_length)
-    #             series_sample = pd.Series([padded_sample])
-    #             nested_data.append(series_sample)
-    #             labels.append(gesture_label)
-        
-    #     # Convert nested_data to DataFrame
-    #     X_nested = pd.DataFrame(nested_data)
-        
-    #     # Use sktime utility to convert nested DataFrame to 2D NumPy array
-    #     X_2d = from_nested_to_2d_array(X_nested)
-        
-    #     y = np.array(labels).astype(int)
-        
-    #     # Split the data into training and testing sets
-    #     X_train, X_test, y_train, y_test = train_test_split(X_2d, y, test_size=self.test_size, random_state=42)
-        
-    #     return X_train, X_test, y_train, y_test
-
     def extract_features_manualy(self):
         # Assume `gesture_data` is the dictionary returned by `read_and_process_files()`
         gesture_data = self.__load_data()  # Assuming this method is properly adjusted to be callable
