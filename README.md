@@ -1,7 +1,7 @@
 ﻿# Celonis Gesture Recognition ML Challenge
 
 ## Overview
-"Celnois Gesture Recognition" is a FastAPI-based application designed to tackle assignment. It is containerized with Docker for easy deployment and scaling.
+"Celnois Gesture Recognition" is a FastAPI-based application designed to assign a gesture to a series of accelerations. It is containerized with Docker for easy deployment and scaling.
 
 ## Getting Started
 
