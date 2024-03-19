@@ -20,4 +20,4 @@
    docker run -d --name myfastapiapp -p 80:80 myfastapiapp
    ```
 
-Your application is now running and accessible at `http://localhost`.
+Your application is now running and accessible at `http://localhost/docs`.
