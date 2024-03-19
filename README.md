@@ -22,6 +22,10 @@
 
 Your application is now running and accessible at `http://localhost/docs`.
 
+2. **Run the Interface:**
+   
 The Application currently supports 2 classifiers;
+
 (i) Logistic Regression: to use please input 'logistic_regression_classifier'
+
 (ii) SVM: to use please input 'svm_classifier'
