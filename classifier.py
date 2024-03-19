@@ -1,6 +1,5 @@
 from fastapi import HTTPException
 from pydantic import BaseModel
-from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier
 from typing import List
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
@@ -10,7 +9,6 @@ import joblib
 import os
 import numpy as np
 from sklearn.svm import SVC
-from sktime.classification.interval_based import TimeSeriesForestClassifier as SKTimeSeriesForestClassifier
 
 
 from parsing_data import read_and_process_files
@@ -114,7 +112,8 @@ class LogisticRegressionClassifier(Classifier):
         self.X_train, self.X_test, self.y_train, self.y_test = self.extract_features_manualy()
 
     def train(self):
-        # Instantiate the random forest classifier
+
+        # Instantiate the logistic regression classifier
         self.model = LogisticRegression(max_iter=1000)
 
         self.model.fit(self.X_train, self.y_train)
@@ -122,6 +121,7 @@ class LogisticRegressionClassifier(Classifier):
         # check if saved_models folder exists 
         if not os.path.exists('saved_models'):
             os.makedirs('saved_models')
+
         # save this model using joblib
         joblib.dump(self.model, 'saved_models/logistic_regression_model.pkl')
         
@@ -159,7 +159,6 @@ class LogisticRegressionClassifier(Classifier):
         prediction = self.model.predict(X_test)
 
         # Returning the prediction
-        # Assuming your model predicts a class label
         return int(prediction[0])
 
 
@@ -169,7 +168,7 @@ class SVMClassifier(Classifier):
         self.X_train, self.X_test, self.y_train, self.y_test = self.extract_features_manualy()
 
     def train(self):
-        # Instantiate the random forest classifier
+        # Instantiate the SVM classifier
         self.model = SVC()
 
         self.model.fit(self.X_train, self.y_train)
@@ -177,6 +176,7 @@ class SVMClassifier(Classifier):
         # check if saved_models folder exists 
         if not os.path.exists('saved_models'):
             os.makedirs('saved_models')
+
         # save this model using joblib
         joblib.dump(self.model, 'saved_models/svm_model.pkl')
 
@@ -189,7 +189,7 @@ class SVMClassifier(Classifier):
         
         # Create TrainingInfo object
         training_info = TrainingInfo(
-            classifier="RandomForestClassifier",
+            classifier="SVMClassifier",
             f1_score=f1,
             precision=precision,
             recall=recall,
@@ -213,5 +213,4 @@ class SVMClassifier(Classifier):
         prediction = self.model.predict(X_test)
 
         # Returning the prediction
-        # Assuming your model predicts a class label
         return int(prediction[0])
