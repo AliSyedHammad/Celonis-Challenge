@@ -44,10 +44,6 @@ class Classifier(ABC):
         # Assume `gesture_data` is the dictionary returned by `read_and_process_files()`
         gesture_data = self.__load_data()  # Assuming this method is properly adjusted to be callable
 
-        # Transforming the data
-        X = []
-        y = []
-
         # Determine the total number of samples and the maximum length of any sample
         n_samples = sum(len(samples) for samples in gesture_data.values())
         n_features = max(max(len(sample) for sample in samples) for samples in gesture_data.values())
@@ -73,6 +69,7 @@ class Classifier(ABC):
         p = np.random.permutation(n_samples)
         X = X[p, :]
         y = y[p]
+
 
         # Split the data into training 
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.test_size, random_state=42)
@@ -122,6 +119,9 @@ class LogisticRegressionClassifier(Classifier):
 
         self.model.fit(self.X_train, self.y_train)
         
+        # check if saved_models folder exists 
+        if not os.path.exists('saved_models'):
+            os.makedirs('saved_models')
         # save this model using joblib
         joblib.dump(self.model, 'saved_models/logistic_regression_model.pkl')
         
@@ -174,6 +174,9 @@ class SVMClassifier(Classifier):
 
         self.model.fit(self.X_train, self.y_train)
         
+        # check if saved_models folder exists 
+        if not os.path.exists('saved_models'):
+            os.makedirs('saved_models')
         # save this model using joblib
         joblib.dump(self.model, 'saved_models/svm_model.pkl')
 
