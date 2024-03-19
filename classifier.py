@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from pydantic import BaseModel
 from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier
 from typing import List
@@ -23,6 +24,10 @@ class TrainingInfo(BaseModel):
     accuracy: float
 
 
+class PredictionInfo(BaseModel):
+    classifier: str
+    classs: int
+
 class Classifier(ABC):
     """
     Abstract base class for classifiers.
@@ -46,8 +51,7 @@ class Classifier(ABC):
         # Determine the total number of samples and the maximum length of any sample
         n_samples = sum(len(samples) for samples in gesture_data.values())
         n_features = max(max(len(sample) for sample in samples) for samples in gesture_data.values())
-        
-        print(n_samples)
+
         # Initialize the data array and labels
         X = np.zeros((n_samples, 3 * n_features))
         y = np.zeros(n_samples)
@@ -82,11 +86,30 @@ class Classifier(ABC):
         pass
 
     
-    def predict(self, X_test):
+    def predict(self, file_content: str):
         """
         Make predictions using the trained classifier.
         """
+        pass
 
+    def format_data_for_prediction(self, file_content: str):
+        """
+        Format the data for prediction.
+        """
+        lines = file_content.strip().split('\n')
+        data = np.array([list(map(float, line.split())) for line in lines if line.strip()])
+        
+        # Assume your model expects a single flattened array for a single prediction instance
+        # Flattening the array
+        data_flattened = data.flatten()
+        
+        # Reshape for a single sample if necessary, assuming your model was trained on multiple features
+        # Example: if your model was trained on samples with 300 features
+        num_features = self.X_train.shape[1]  # This assumes `self.X_train` reflects the training data's shape
+        data_for_prediction = np.zeros((1, num_features))
+        data_for_prediction[0, :data_flattened.shape[0]] = data_flattened
+        
+        return data_for_prediction
 
 class LogisticRegressionClassifier(Classifier):
     def __init__(self, test_size: float):
@@ -98,6 +121,10 @@ class LogisticRegressionClassifier(Classifier):
         self.model = LogisticRegression(max_iter=1000)
 
         self.model.fit(self.X_train, self.y_train)
+        
+        # save this model using joblib
+        joblib.dump(self.model, 'saved_models/logistic_regression_model.pkl')
+        
         # Calculate evaluation metrics
         y_pred = self.model.predict(self.X_test)
         f1 = f1_score(self.y_test, y_pred, average='weighted')
@@ -116,52 +143,24 @@ class LogisticRegressionClassifier(Classifier):
         
         return training_info
 
-    def predict(self):
-        # Ensure that the model has been trained
-        if self.model is None:
-            raise ValueError("Model has not been trained. Please train the model first.")
+    def predict(self, file_content):
+        
+        # check if there is a model file saved
+        if os.path.exists('saved_models/logistic_regression_model.pkl'):
+            self.model = joblib.load('saved_models/logistic_regression_model.pkl')
+        else:
+            raise HTTPException(status_code=400, detail="A training of the model must be called before prediction.")
+
+        
+        # Format the input data for prediction
+        X_test = self.format_data_for_prediction(file_content)
 
         # Make predictions using the trained classifier
-        predictions = self.model.predict(self.X_test)
-        return predictions
+        prediction = self.model.predict(X_test)
 
-
-class RandomForestClassifier(Classifier):
-    def __init__(self, test_size: float):
-        super().__init__(test_size=test_size)
-        self.X_train, self.X_test, self.y_train, self.y_test = self.extract_features_using_sklearn_support()
-
-    def train(self):
-        # Instantiate the random forest classifier
-        self.model = RandomForestClassifier()
-
-        self.model.fit(self.X_train, self.y_train)
-        # Calculate evaluation metrics
-        y_pred = self.model.predict(self.X_test)
-        f1 = f1_score(self.y_test, y_pred, average='weighted')
-        precision = precision_score(self.y_test, y_pred, average='weighted')
-        recall = recall_score(self.y_test, y_pred, average='weighted')
-        accuracy = accuracy_score(self.y_test, y_pred)
-        
-        # Create TrainingInfo object
-        training_info = TrainingInfo(
-            classifier="RandomForestClassifier",
-            f1_score=f1,
-            precision=precision,
-            recall=recall,
-            accuracy=accuracy
-        )
-        
-        return training_info
-
-    def predict(self):
-        # Ensure that the model has been trained
-        if self.model is None:
-            raise ValueError("Model has not been trained. Please train the model first.")
-
-        # Make predictions using the trained classifier
-        predictions = self.model.predict(self.X_test)
-        return predictions
+        # Returning the prediction
+        # Assuming your model predicts a class label
+        return int(prediction[0])
 
 
 class SVMClassifier(Classifier):
@@ -174,6 +173,10 @@ class SVMClassifier(Classifier):
         self.model = SVC()
 
         self.model.fit(self.X_train, self.y_train)
+        
+        # save this model using joblib
+        joblib.dump(self.model, 'saved_models/svm_model.pkl')
+
         # Calculate evaluation metrics
         y_pred = self.model.predict(self.X_test)
         f1 = f1_score(self.y_test, y_pred, average='weighted')
@@ -192,11 +195,20 @@ class SVMClassifier(Classifier):
         
         return training_info
 
-    def predict(self):
-        # Ensure that the model has been trained
-        if self.model is None:
-            raise ValueError("Model has not been trained. Please train the model first.")
+    def predict(self, file_content):
+        
+        # check if there is a model file saved
+        if os.path.exists('saved_models/svm_model.pkl'):
+            self.model = joblib.load('saved_models/svm_model.pkl')
+        else:
+            raise HTTPException(status_code=400, detail="A training of the model must be called before prediction.")
 
+        # Format the input data for prediction
+        X_test = self.format_data_for_prediction(file_content)
+        
         # Make predictions using the trained classifier
-        predictions = self.model.predict(self.X_test)
-        return predictions
+        prediction = self.model.predict(X_test)
+
+        # Returning the prediction
+        # Assuming your model predicts a class label
+        return int(prediction[0])
