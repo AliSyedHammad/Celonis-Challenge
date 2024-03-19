@@ -22,7 +22,7 @@
 
 Your application is now running and accessible at `http://localhost/docs`.
 
-2. **Run the Interface:**
+3. **Run the Interface:**
    
 The Application currently supports 2 classifiers;
 
